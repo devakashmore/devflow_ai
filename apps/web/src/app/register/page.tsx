@@ -1,7 +1,8 @@
 "use client"
 
 import { apiRequest } from "@/lib/api";
-import { useRouter } from "next/router";
+// import {useRouter  } from "next/router";
+import {redirect, useRouter} from "next/navigation"
 import { FormEvent, useState } from "react"
 
 export default function RegisterPage() {
@@ -37,7 +38,7 @@ export default function RegisterPage() {
             <main className="flex min-h-screen items-center justify-center bg-slate-950 px-4">
                 <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-8">
                     <h1 className="text-3xl font-bold capitalize text-slate-100">
-                        Create YOur Account
+                        Create Your Account
                     </h1>
 
                     <p className="mt-2  text-slate-400">
@@ -89,6 +90,8 @@ export default function RegisterPage() {
                         <button type="submit" disabled={loading} className="w-full rounded-lg bg-blue-600 px-4 py-3 font-medium text-white hover:bg-blue-500 disabled:opacity-50 capitalize">
                             {loading ? "Creating Account..." : "Create Account"}
                         </button>
+
+                        <p onClick={()=>(router.push("/login"))} className="text-amber-50 text-center cursor-pointer">Alredy have an Account? login here</p>
                     </form>
                 </div>
 

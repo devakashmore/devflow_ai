@@ -1,5 +1,6 @@
 "use client";
-import { useRouter } from "next/router"
+import { apiRequest } from "@/lib/api";
+import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react";
 
 interface User {
@@ -13,7 +14,37 @@ export default function DashboardPage() {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     useEffect(() => {
+        async function loadUser() {
 
+            const token = localStorage.getItem("accessToken");
+// console.log("DASHBOARD TOKEN:", token);
+            if (!token) {
+                router.push("/login");
+                return;
+            }
+
+            try {
+                const response = await apiRequest("/api/v1/user/me", {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+
+
+
+                // console.log("ME RESPONSE:", response);
+                // console.log("USER DATA:", response?.data?.user);
+                setUser(response.data.user);
+            } catch (error) {
+                localStorage.removeItem("accessToken");
+                router.push("/login");
+                // console.error("ME API ERROR:", error);
+            } finally {
+                setLoading(false);
+            }
+
+        }
+        loadUser();
     }, [router])
 
     function logout() {
@@ -22,7 +53,7 @@ export default function DashboardPage() {
     }
 
     if (loading) {
-        <main className="flex min-h-screen items-center justify-center bg-slate-950 text-white">
+        return <main className="flex min-h-screen items-center justify-center bg-slate-950 text-white">
             Loading...
         </main>
     }

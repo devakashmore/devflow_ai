@@ -1,7 +1,7 @@
 "use client"
 
 import { apiRequest } from "@/lib/api";
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 import { FormEvent, useState } from "react";
 
 export default function LoginPage() {
@@ -24,7 +24,7 @@ export default function LoginPage() {
                 }),
             });
 
-            localStorage.setItem("token", response.data.accessToken);
+            localStorage.setItem("accessToken", response.data.accessToken);
             router.push("/dashboard");
         } catch (error) {
             setError(
