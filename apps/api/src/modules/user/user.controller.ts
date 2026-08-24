@@ -4,7 +4,7 @@ import { AuthRequest } from "../../middleware/auth.middleware.js";
 
 
 
-export async function getCurrentUser(req: Request, res: Response) {
+export async function getCurrentUser(req: AuthRequest, res: Response) {
 
     if (!req.userId) {
         return res.status(401).json({ message: "User not authenticated" });
