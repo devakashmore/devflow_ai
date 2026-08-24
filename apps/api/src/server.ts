@@ -27,6 +27,8 @@ app.use("/api/v1/auth", authRoutes);
 import userRoutes from "./modules/user/user.routes.js";
 app.use("/api/v1/user", userRoutes);
 
+import organizationRoutes from "./modules/organization/organization.route.js";
+app.use("/api/v1/organizations", organizationRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`)
