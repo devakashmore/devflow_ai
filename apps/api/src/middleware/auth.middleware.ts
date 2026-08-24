@@ -14,7 +14,7 @@ if (!accessSecret) {
     throw new Error("JWT_ACCESS_SECRET is not configured");
 }
 
-export function authenticate(req: Request, res: Response, next: NextFunction) {
+export function authenticate(req: AuthRequest, res: Response, next: NextFunction) {
 
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
