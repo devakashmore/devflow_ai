@@ -42,3 +42,34 @@ export async function createOrganization(userId: string, name: string) {
         },
     });
 }
+
+
+export async function getOrganization(
+    userId: string,
+    organizationId: string
+) {
+    return prisma.organization.findFirst({
+        where: {
+            id: organizationId,
+            members: {
+                some: {
+                    userId,
+                },
+            },
+        },
+        include: {
+            members: {
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true,
+                            avatarUrl: true
+                        },
+                    },
+                },
+            },
+        },
+    });
+}
