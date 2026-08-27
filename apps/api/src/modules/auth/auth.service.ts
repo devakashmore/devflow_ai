@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs"
-import { prisma } from "../../config/database.ts"
+import { prisma } from "../../config/database.js"
 
 interface RegisterInput {
     name: string;
