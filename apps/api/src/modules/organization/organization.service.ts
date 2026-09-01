@@ -1,6 +1,6 @@
 import { prisma } from "../../config/database.js"
 import { createSlug } from "./organization.utils.js"
-
+type OrganizationRole = "OWNER" | "ADMIN" | "MANAGER" | "DEVELOPER" | "VIEWER";
 
 export async function createOrganization(userId: string, name: string) {
     let slug = createSlug(name);
@@ -68,6 +68,77 @@ export async function getOrganization(
                             avatarUrl: true
                         },
                     },
+                },
+            },
+        },
+    });
+}
+
+export async function getOrganizationMembers(
+    organizationId: string
+) {
+    return prisma.organizationMember.findMany({
+        where: {
+            organizationId,
+        },
+        include: {
+            user: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    avatarUrl: true,
+                },
+            },
+        },
+        orderBy: {
+            createdAt: "asc",
+        },
+    });
+}
+
+export async function addOrganizationMember(
+    organizationId: string,
+    email: string,
+    role: OrganizationRole
+) {
+    const user = await prisma.user.findUnique({
+        where: {
+            email,
+        },
+    });
+
+    if (!user) {
+        throw new Error("USER_NOT_FOUND");
+    }
+
+    const existingMember =
+        await prisma.organizationMember.findUnique({
+            where: {
+                userId_organizationId: {
+                    userId: user.id,
+                    organizationId,
+                },
+            },
+        });
+
+    if (existingMember) {
+        throw new Error("MEMBER_ALREADY_EXISTS");
+    }
+
+    return prisma.organizationMember.create({
+        data: {
+            userId: user.id,
+            organizationId,
+            role,
+        },
+        include: {
+            user: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    avatarUrl: true,
                 },
             },
         },
