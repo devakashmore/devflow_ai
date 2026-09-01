@@ -30,7 +30,7 @@ import userRoutes from "./modules/user/user.routes.js";
 app.use("/api/v1/user", userRoutes);
 
 import organizationRoutes from "./modules/organization/organization.route.js";
-import { tr } from "zod/locales";
+
 app.use("/api/v1/organizations", organizationRoutes);
 
 // app.listen(PORT, () => {
