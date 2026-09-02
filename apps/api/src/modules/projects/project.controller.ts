@@ -31,7 +31,7 @@ export async function createProjectController(req: AuthRequest, res: Response) {
             },
         });
 
-    } catch (error) {
+    } catch (error:any) {
         if (
             error instanceof Error &&
             error.message ===

@@ -21,7 +21,7 @@ export async function register(req: Request, res: Response) {
                     refreshToken
                 }
             });
-    } catch (error) {
+    } catch (error:any) {
 
         if (error instanceof Error && error.message === "User already exists") {
             res.status(409).json({
@@ -62,7 +62,7 @@ export async function login(req: Request, res: Response) {
                 refreshToken
             }
         })
-    } catch (error) {
+    } catch (error:any) {
         res.status(400).json({
             success: false,
             message: "invalid login data(email or password)",
