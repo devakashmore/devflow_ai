@@ -20,7 +20,7 @@ export function requireOrganizationRole( allowedRoles: OrganizationRole) {
                 });
             }
 
-            const organizationId = req.params.organizationId;
+            const organizationId = String(req.params.organizationId);
 
             if (!organizationId) {
                 return res.status(401).json({
