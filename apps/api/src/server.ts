@@ -33,6 +33,12 @@ import organizationRoutes from "./modules/organization/organization.route.js";
 
 app.use("/api/v1/organizations", organizationRoutes);
 
+import projectRoutes from "./modules/projects/project.routes.js";
+
+app.use("/api/v1", projectRoutes);
+
+
+
 // app.listen(PORT, () => {
 //     console.log(`Server is running on port ${PORT}`)
 // })
