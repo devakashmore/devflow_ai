@@ -12,7 +12,7 @@ export async function getMembersController(
 ) {
     try {
         const members = await getOrganizationMembers(
-            req.params.organizationId
+            String(req.params.organizationId)
         );
 
         return res.json({
@@ -38,7 +38,7 @@ export async function addMemberController(
         const data = addMemberSchema.parse(req.body);
 
         const member = await addOrganizationMember(
-            req.params.organizationId,
+            String(req.params.organizationId),
             data.email,
             data.role
         );
@@ -118,7 +118,7 @@ export async function getOrganizationController(req: AuthRequest, res: Response)
 
         const organization = await getOrganization(
             req.userId,
-            req.params.organizationId
+            String(req.params.organizationId)
         );
         if (!organization) {
             return res.status(404).json({

@@ -18,7 +18,7 @@ export async function createProjectController(req: AuthRequest, res: Response) {
         const data = createProjectSchema.parse(req.body);
         const project = await createProject(
             req.userId,
-            req.params.organizationId,
+            String(req.params.organizationId),
             data.name,
             data.description
         );
@@ -31,7 +31,7 @@ export async function createProjectController(req: AuthRequest, res: Response) {
             },
         });
 
-    } catch (error:any) {
+    } catch (error: any) {
         if (
             error instanceof Error &&
             error.message ===
