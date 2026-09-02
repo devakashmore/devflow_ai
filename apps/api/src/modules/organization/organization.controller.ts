@@ -21,7 +21,7 @@ export async function getMembersController(
                 members,
             },
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error(error);
 
         return res.status(500).json({
@@ -50,7 +50,7 @@ export async function addMemberController(
                 member,
             },
         });
-    } catch (error) {
+    } catch (error: any) {
         if (
             error instanceof Error &&
             error.message === "USER_NOT_FOUND"
@@ -97,7 +97,7 @@ export async function createOrganizationController(req: AuthRequest, res: Respon
             },
         });
 
-    } catch (error) {
+    } catch (error: any) {
         // console.error(error);
 
         return res.status(400).json({
@@ -132,7 +132,7 @@ export async function getOrganizationController(req: AuthRequest, res: Response)
                 organization,
             },
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error(error);
 
         return res.status(500).json({
