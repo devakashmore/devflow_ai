@@ -53,7 +53,7 @@ export function requireOrganizationRole( allowedRoles: OrganizationRole) {
             }
 
             next();
-        } catch (error) {
+        } catch (error:any) {
             console.error(error);
             return res.status(500).json({
                 success: false,
