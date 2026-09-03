@@ -12,12 +12,12 @@ const app = express();
 app.use(helmet());
 app.use(cors({
     // origin: "*",
-    origin:   process.env.CORS_ORIGIN,
-    credentials:true
+    origin: process.env.CORS_ORIGIN,
+    credentials: true
 }));
 app.use(express.json());
 
-const PORT = Number(process.env.PORT)  || 8000
+const PORT = Number(process.env.PORT) || 8000
 
 app.get("/api/healthcheck", (req, res) => {
     res.json({ success: true, message: "healthy ok !" })
@@ -37,6 +37,9 @@ import projectRoutes from "./modules/projects/project.routes.js";
 
 app.use("/api/v1", projectRoutes);
 
+
+import taskRoutes from "./modules/tasks/task.routes.js";
+app.use("/api/v1", taskRoutes);
 
 
 // app.listen(PORT, () => {
