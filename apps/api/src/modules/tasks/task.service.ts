@@ -101,3 +101,59 @@ export async function createTask(
     });
 
 }
+
+export async function getProjectTasks(userId: string, projectId: string) {
+    const project = await prisma.project.findUnique({
+        where: {
+            id: projectId
+        }
+    })
+
+    if (!project) {
+        throw new Error("PROJECT_NOT_FOUND");
+    }
+
+    const member = await prisma.organizationMember.findUnique({
+        where: {
+            userId_organizationId: {
+                userId,
+                organizationId: project.organizationId,
+            },
+        },
+    });
+    if (!member) {
+        throw new Error("NOT_ORGANIZATION_MEMBER");
+    }
+
+    return await prisma.task.findMany({
+        where: {
+            projectId
+        },
+        include: {
+            assignee: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    avatarUrl: true
+                },
+            },
+            creator: {
+                select: {
+                    id: true,
+                    name: true
+                },
+            },
+        },
+        orderBy: {
+            createdAt: "desc",
+        },
+    });
+}
+
+
+
+
+
+
+
