@@ -151,7 +151,56 @@ export async function getProjectTasks(userId: string, projectId: string) {
     });
 }
 
+export async function updateTaskStatus(
+    userId: string,
+    projectId: string,
+    taskId: string,
+    status: "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "DONE") {
 
+
+    const project = await prisma.project.findUnique({
+        where: {
+            id: projectId
+        },
+    });
+
+    if (!project) {
+        throw new Error("PROJECT_NOT_FOUND");
+    }
+
+    const member = await prisma.organizationMember.findUnique({
+        where: {
+            userId_organizationId: {
+                userId,
+                organizationId: project.organizationId,
+            },
+        },
+    });
+
+    if (!member) {
+        throw new Error("NOT_ORGANIZATION_MEMBER");
+    }
+
+    const task = await prisma.task.findFirst({
+        where: {
+            id: taskId,
+            projectId,
+        },
+    });
+
+    if (!task) {
+        throw new Error("TASK_NOT_FOUND");
+    }
+
+    return prisma.task.update({
+        where: {
+            id: taskId,
+        },
+        data: {
+            status,
+        },
+    });
+}
 
 
 

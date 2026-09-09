@@ -25,4 +25,15 @@ export const createTaskSchema = z.object({
         .datetime()
         .optional()
 
-})
+});
+
+export const updateTakStatusSchema = z.object({
+    status: z.enum([
+        "TODO",
+        "IN_PROGRESS",
+        "IN_REVIEW",
+        "DONE",
+    ]),
+});
+
+
