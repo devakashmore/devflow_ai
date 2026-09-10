@@ -148,7 +148,7 @@ export async function getMemberController(req: AuthRequest, res: Response) {
     try {
 
         const members = await getOrganizationMembers(
-            req.params.organizationId
+            req.params.organizationId as string,
         );
         return res.json({
             success: true,
@@ -171,7 +171,7 @@ export async function addMemberController(req: AuthRequest, res: Response) {
     try {
         const data = addMemberSchema.parse(req.body);
         const member = await addOrganizationMember(
-            req.params.organizationId,
+            req.params.organizationId as string,
             data.email,
             data.role
         );
