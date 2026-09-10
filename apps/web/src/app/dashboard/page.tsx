@@ -1,8 +1,9 @@
 "use client";
 import { apiRequest } from "@/lib/api";
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
+import { title } from "process";
 
 
 type TaskStatus = "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "DONE";
@@ -37,6 +38,14 @@ export default function DashboardPage() {
     const [loading, setLoading] = useState(true);
     const [task, setTasks] = useState<Task[]>([]);
     const [projectId, setProjectId] = useState("");
+
+
+    const [showCreateTask, setShowCreateTask] = useState(false);
+    const [taskTitle, setTaskTitle] = useState("");
+    const [taskDescription, setTaskDescription] = useState("");
+    const [taskPriority, setTaskPriority] = useState<"LOW" | "MEDIUM" | "HIGH" | "URGENT">("MEDIUM");
+    const [creatingTask, setCreatingTask] = useState(false);
+
     useEffect(() => {
         async function loadUser() {
 
@@ -111,6 +120,62 @@ export default function DashboardPage() {
         } finally {
             setLoading(false);
         }
+    }
+
+    async function handleCreateTask(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+        if (!projectId) {
+            alert("No project selected");
+            return;
+        }
+
+        if (!taskTitle.trim()) {
+            return;
+        }
+        try {
+            setCreatingTask(true);
+            const token = localStorage.getItem("accessToken");
+            const response = await apiRequest(`/api/v1/projects/${projectId}/tasks`,
+
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        title: taskTitle,
+                        description: taskDescription,
+                        priority: taskPriority,
+                    }),
+                }
+            );
+
+            // adding newly created task to Kanban
+            setTasks((currentTasks) => [
+                response.data.task,
+                ...currentTasks
+            ]);
+
+            // clearing form
+            setTaskTitle("");
+            setTaskDescription("");
+            setTaskPriority("MEDIUM");
+
+            //close modal
+            setShowCreateTask(false);
+        } catch (error) {
+            console.error(
+                "Failed to create task:",
+                error
+            );
+
+            alert("Failed to create task");
+        } finally {
+            setCreatingTask(false);
+        }
+
+
     }
 
     async function handleDragEnd(result: any) {
@@ -235,12 +300,25 @@ export default function DashboardPage() {
                     {/* KANBAN */}
                     <div className="mt-10">
                         <div className="mb-5">
-                            <h2 className="text-2xl font-bold">
-                                Project Task Board
-                            </h2>
-                            <p className="mt-1 text-sm text-slate-400">
-                                Drag and drop tasks to update their status.
-                            </p>
+                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                    <h2 className="text-2xl font-bold">
+                                        Project Task Board
+                                    </h2>
+
+                                    <p className="mt-1 text-sm text-slate-400">
+                                        Drag and drop tasks to update their status.
+                                    </p>
+                                </div>
+
+                                <button
+                                    onClick={() => setShowCreateTask(true)}
+                                    disabled={!projectId}
+                                    className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    + Create Task
+                                </button>
+                            </div>
                         </div>
                         {!projectId ? (
                             <div className="rounded-xl border border-yellow-800 bg-yellow-950/30 p-6">
@@ -362,9 +440,7 @@ export default function DashboardPage() {
                                                                                                 : task.priority ===
                                                                                                     "MEDIUM"
                                                                                                     ? "bg-yellow-500/20 text-yellow-400"
-                                                                                                    : "bg-green-500/20 text-green-400"
-                                                                                            }`}
-                                                                                    >
+                                                                                                    : "bg-green-500/20 text-green-400"}`} >
                                                                                         {task.priority}
                                                                                     </span>
 
@@ -408,7 +484,148 @@ export default function DashboardPage() {
                         )}
                     </div>
                 </div>
+                {showCreateTask && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
 
+                        <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
+
+                            {/* Header */}
+
+                            <div className="flex items-center justify-between">
+
+                                <div>
+                                    <h2 className="text-xl font-bold">
+                                        Create Task
+                                    </h2>
+
+                                    <p className="mt-1 text-sm text-slate-400">
+                                        Add a new task to your project.
+                                    </p>
+                                </div>
+
+                                <button
+                                    onClick={() => setShowCreateTask(false)}
+                                    className="text-2xl text-slate-400 hover:text-white"
+                                >
+                                    ×
+                                </button>
+
+                            </div>
+
+                            {/* Form */}
+
+                            <form
+                                onSubmit={handleCreateTask}
+                                className="mt-6 space-y-5"
+                            >
+
+                                {/* Title */}
+
+                                <div>
+                                    <label className="mb-2 block text-sm font-medium">
+                                        Task Title
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        value={taskTitle}
+                                        onChange={(e) =>
+                                            setTaskTitle(e.target.value)
+                                        }
+                                        placeholder="e.g. Build authentication UI"
+                                        className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-blue-500"
+                                        required
+                                    />
+                                </div>
+
+                                {/* Description */}
+
+                                <div>
+                                    <label className="mb-2 block text-sm font-medium">
+                                        Description
+                                    </label>
+
+                                    <textarea
+                                        value={taskDescription}
+                                        onChange={(e) =>
+                                            setTaskDescription(e.target.value)
+                                        }
+                                        placeholder="Describe what needs to be done..."
+                                        rows={4}
+                                        className="w-full resize-none rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-blue-500"
+                                    />
+                                </div>
+
+                                {/* Priority */}
+
+                                <div>
+                                    <label className="mb-2 block text-sm font-medium">
+                                        Priority
+                                    </label>
+
+                                    <select
+                                        value={taskPriority}
+                                        onChange={(e) =>
+                                            setTaskPriority(
+                                                e.target.value as
+                                                | "LOW"
+                                                | "MEDIUM"
+                                                | "HIGH"
+                                                | "URGENT"
+                                            )
+                                        }
+                                        className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none focus:border-blue-500"
+                                    >
+                                        <option value="LOW">
+                                            Low
+                                        </option>
+
+                                        <option value="MEDIUM">
+                                            Medium
+                                        </option>
+
+                                        <option value="HIGH">
+                                            High
+                                        </option>
+
+                                        <option value="URGENT">
+                                            Urgent
+                                        </option>
+                                    </select>
+                                </div>
+
+                                {/* Buttons */}
+
+                                <div className="flex justify-end gap-3 pt-2">
+
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setShowCreateTask(false)
+                                        }
+                                        className="rounded-lg border border-slate-700 px-5 py-2.5 text-sm font-medium hover:bg-slate-800"
+                                    >
+                                        Cancel
+                                    </button>
+
+                                    <button
+                                        type="submit"
+                                        disabled={creatingTask}
+                                        className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        {creatingTask
+                                            ? "Creating..."
+                                            : "Create Task"}
+                                    </button>
+
+                                </div>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+                )}
             </main>
         </>
     )
