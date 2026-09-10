@@ -17,7 +17,7 @@ export async function createTaskController(req: AuthRequest, res: Response) {
         const data = createTaskSchema.parse(req.body);
         const task = await createTask(
             req.userId,
-            req.params.projectId,
+            req.params.projectId as string,
             data
         );
         return res.status(201).json({
@@ -92,7 +92,7 @@ export async function getProjectTasksController(req: AuthRequest, res: Response)
         }
         const task = await getProjectTasks(
             req.userId,
-            req.params.projectId
+            req.params.projectId as string,
         );
         return res.status(200).json({
             success: true,
@@ -143,8 +143,8 @@ export async function updateTaskController(req: AuthRequest, res: Response) {
 
         const task = await updateTaskStatus(
             req.userId,
-            req.params.projectId,
-            req.params.taskId,
+            req.params.projectId as string,
+            req.params.taskId as string,
             status
         );
 
