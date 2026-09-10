@@ -6,7 +6,8 @@ import { AuthRequest } from "./auth.middleware.js"
 
 type OrganizationRole = | "OWNER" | "ADMIN" | "MANAGER" | "DEVELOPER" | "VIEWER";
 
-export function requireOrganizationRole( allowedRoles: OrganizationRole) {
+// export function requireOrganizationRole( allowedRoles: OrganizationRole) {
+export function requireOrganizationRole(allowedRoles: OrganizationRole[]) {
     return async (
         req: AuthRequest,
         res: Response,
@@ -53,7 +54,7 @@ export function requireOrganizationRole( allowedRoles: OrganizationRole) {
             }
 
             next();
-        } catch (error:any) {
+        } catch (error: any) {
             console.error(error);
             return res.status(500).json({
                 success: false,
