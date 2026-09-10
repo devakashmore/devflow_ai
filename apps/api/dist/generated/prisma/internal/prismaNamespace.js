@@ -71,7 +71,8 @@ export const ModelName = {
     Organization: 'Organization',
     OrganizationMember: 'OrganizationMember',
     Project: 'Project',
-    ProjectMember: 'ProjectMember'
+    ProjectMember: 'ProjectMember',
+    Task: 'Task'
 };
 /**
  * Enums
@@ -121,6 +122,19 @@ export const ProjectMemberScalarFieldEnum = {
     projectId: 'projectId',
     userId: 'userId',
     createdAt: 'createdAt'
+};
+export const TaskScalarFieldEnum = {
+    id: 'id',
+    title: 'title',
+    description: 'description',
+    status: 'status',
+    priority: 'priority',
+    dueDate: 'dueDate',
+    projectId: 'projectId',
+    creatorId: 'creatorId',
+    assigneeId: 'assigneeId',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
 };
 export const SortOrder = {
     asc: 'asc',

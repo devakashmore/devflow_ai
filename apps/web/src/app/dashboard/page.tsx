@@ -46,6 +46,8 @@ export default function DashboardPage() {
     const [taskPriority, setTaskPriority] = useState<"LOW" | "MEDIUM" | "HIGH" | "URGENT">("MEDIUM");
     const [creatingTask, setCreatingTask] = useState(false);
 
+    const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+
     useEffect(() => {
         async function loadUser() {
 
@@ -383,7 +385,6 @@ export default function DashboardPage() {
                                                         {/* TASKS */}
 
                                                         <div className="space-y-3">
-
                                                             {columnTasks.map(
                                                                 (task, index) => (
 
@@ -395,12 +396,10 @@ export default function DashboardPage() {
 
                                                                         {(provided, snapshot) => (
 
-                                                                            <div
-                                                                                ref={
-                                                                                    provided.innerRef
-                                                                                }
+                                                                            <div ref={provided.innerRef}
                                                                                 {...provided.draggableProps}
                                                                                 {...provided.dragHandleProps}
+                                                                                onClick={() => setSelectedTask(task)}
                                                                                 style={
                                                                                     provided
                                                                                         .draggableProps
@@ -429,18 +428,14 @@ export default function DashboardPage() {
                                                                                 {/* PRIORITY */}
 
                                                                                 <div className="mt-4">
-
-                                                                                    <span
-                                                                                        className={`rounded-full px-2.5 py-1 text-xs font-medium ${task.priority ===
-                                                                                            "URGENT"
-                                                                                            ? "bg-red-500/20 text-red-400"
+                                                                                    <span className={`rounded-full px-2.5 py-1 text-xs font-medium
+                                           ${task.priority === "URGENT" ? "bg-red-500/20 text-red-400" : task.priority ===
+                                                                                            "HIGH"
+                                                                                            ? "bg-orange-500/20 text-orange-400"
                                                                                             : task.priority ===
-                                                                                                "HIGH"
-                                                                                                ? "bg-orange-500/20 text-orange-400"
-                                                                                                : task.priority ===
-                                                                                                    "MEDIUM"
-                                                                                                    ? "bg-yellow-500/20 text-yellow-400"
-                                                                                                    : "bg-green-500/20 text-green-400"}`} >
+                                                                                                "MEDIUM"
+                                                                                                ? "bg-yellow-500/20 text-yellow-400"
+                                                                                                : "bg-green-500/20 text-green-400"}`} >
                                                                                         {task.priority}
                                                                                     </span>
 
@@ -484,6 +479,86 @@ export default function DashboardPage() {
                         )}
                     </div>
                 </div>
+                {selectedTask && (
+                    <div
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+                        onClick={() => setSelectedTask(null)}
+                    >
+                        <div
+                            className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {/* Header */}
+
+                            <div className="flex items-start justify-between">
+                                <div>
+                                    <p className="text-sm text-blue-400">
+                                        Task Details
+                                    </p>
+
+                                    <h2 className="mt-2 text-2xl font-bold">
+                                        {selectedTask.title}
+                                    </h2>
+                                </div>
+
+                                <button
+                                    onClick={() => setSelectedTask(null)}
+                                    className="text-2xl text-slate-400 hover:text-white"
+                                >
+                                    ×
+                                </button>
+                            </div>
+
+                            {/* Description */}
+
+                            <div className="mt-6">
+                                <p className="text-sm font-medium text-slate-400">
+                                    Description
+                                </p>
+
+                                <p className="mt-2 text-slate-200">
+                                    {selectedTask.description ||
+                                        "No description provided."}
+                                </p>
+                            </div>
+
+                            {/* Status */}
+
+                            <div className="mt-6">
+                                <p className="text-sm font-medium text-slate-400">
+                                    Status
+                                </p>
+
+                                <div className="mt-2 rounded-lg border border-slate-700 bg-slate-800 px-4 py-3">
+                                    {selectedTask.status.replace("_", " ")}
+                                </div>
+                            </div>
+
+                            {/* Priority */}
+
+                            <div className="mt-5">
+                                <p className="text-sm font-medium text-slate-400">
+                                    Priority
+                                </p>
+
+                                <div className="mt-2 rounded-lg border border-slate-700 bg-slate-800 px-4 py-3">
+                                    {selectedTask.priority}
+                                </div>
+                            </div>
+
+                            {/* Close */}
+
+                            <div className="mt-8 flex justify-end">
+                                <button
+                                    onClick={() => setSelectedTask(null)}
+                                    className="rounded-lg border border-slate-700 px-5 py-2.5 text-sm font-medium hover:bg-slate-800 cursor-pointer"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
                 {showCreateTask && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
 

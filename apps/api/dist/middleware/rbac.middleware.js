@@ -1,5 +1,5 @@
 import { prisma } from "../config/database.js";
-
+// export function requireOrganizationRole( allowedRoles: OrganizationRole) {
 export function requireOrganizationRole(allowedRoles) {
     return async (req, res, next) => {
         try {
@@ -9,7 +9,7 @@ export function requireOrganizationRole(allowedRoles) {
                     message: "Authentication required"
                 });
             }
-            const organizationId =String( req.params.organizationId);
+            const organizationId = String(req.params.organizationId);
             if (!organizationId) {
                 return res.status(401).json({
                     success: false,
