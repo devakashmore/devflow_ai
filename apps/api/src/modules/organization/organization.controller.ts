@@ -30,53 +30,53 @@ export async function getMembersController(
         });
     }
 }
-export async function addMemberController(
-    req: AuthRequest,
-    res: Response
-) {
-    try {
-        const data = addMemberSchema.parse(req.body);
+// export async function addMemberController(
+//     req: AuthRequest,
+//     res: Response
+// ) {
+//     try {
+//         const data = addMemberSchema.parse(req.body);
 
-        const member = await addOrganizationMember(
-            String(req.params.organizationId),
-            data.email,
-            data.role
-        );
+//         const member = await addOrganizationMember(
+//             String(req.params.organizationId),
+//             data.email,
+//             data.role
+//         );
 
-        return res.status(201).json({
-            success: true,
-            message: "Member added successfully",
-            data: {
-                member,
-            },
-        });
-    } catch (error: any) {
-        if (
-            error instanceof Error &&
-            error.message === "USER_NOT_FOUND"
-        ) {
-            return res.status(404).json({
-                success: false,
-                message: "No user exists with this email",
-            });
-        }
+//         return res.status(201).json({
+//             success: true,
+//             message: "Member added successfully",
+//             data: {
+//                 member,
+//             },
+//         });
+//     } catch (error: any) {
+//         if (
+//             error instanceof Error &&
+//             error.message === "USER_NOT_FOUND"
+//         ) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: "No user exists with this email",
+//             });
+//         }
 
-        if (
-            error instanceof Error &&
-            error.message === "MEMBER_ALREADY_EXISTS"
-        ) {
-            return res.status(409).json({
-                success: false,
-                message: "User is already a member",
-            });
-        }
+//         if (
+//             error instanceof Error &&
+//             error.message === "MEMBER_ALREADY_EXISTS"
+//         ) {
+//             return res.status(409).json({
+//                 success: false,
+//                 message: "User is already a member",
+//             });
+//         }
 
-        return res.status(400).json({
-            success: false,
-            message: "Unable to add member",
-        });
-    }
-}
+//         return res.status(400).json({
+//             success: false,
+//             message: "Unable to add member",
+//         });
+//     }
+// }
 export async function createOrganizationController(req: AuthRequest, res: Response) {
     try {
 

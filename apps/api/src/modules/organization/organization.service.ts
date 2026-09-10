@@ -7,74 +7,74 @@ type OrganizationRole = "OWNER" | "ADMIN" | "MANAGER" | "DEVELOPER" | "VIEWER";
 
 
 
-export async function getOrganizationMembers(organizationId: string) {
-    return await prisma.organizationMember.findMany({
-        where: {
-            organizationId,
-        },
-        include: {
-            user: {
-                select: {
-                    id: true,
-                    name: true,
-                    email: true,
-                    avatarUrl: true
-                },
-            },
-        },
-        orderBy: {
-            createdAt: "asc",
-        },
-    });
-}
+// export async function getOrganizationMembers(organizationId: string) {
+//     return await prisma.organizationMember.findMany({
+//         where: {
+//             organizationId,
+//         },
+//         include: {
+//             user: {
+//                 select: {
+//                     id: true,
+//                     name: true,
+//                     email: true,
+//                     avatarUrl: true
+//                 },
+//             },
+//         },
+//         orderBy: {
+//             createdAt: "asc",
+//         },
+//     });
+// }
 
-export async function addOrganizationMember(
-    organizationId: string,
-    email: string,
-    role: OrganizationRole
-) {
+// export async function addOrganizationMember(
+//     organizationId: string,
+//     email: string,
+//     role: OrganizationRole
+// ) {
 
-    const user = await prisma.user.findUnique({
-        where: {
-            email,
-        },
-    });
-    if (!user) {
-        throw new Error(`User Not Found`);
-    }
+//     const user = await prisma.user.findUnique({
+//         where: {
+//             email,
+//         },
+//     });
+//     if (!user) {
+//         throw new Error(`User Not Found`);
+//     }
 
-    const existingMember = await prisma.organizationMember.findUnique({
-        where: {
-            userId_organizationId: {
-                userId: user.id,
-                organizationId
-            },
-        },
-    });
+//     const existingMember = await prisma.organizationMember.findUnique({
+//         where: {
+//             userId_organizationId: {
+//                 userId: user.id,
+//                 organizationId
+//             },
+//         },
+//     });
 
-    if (existingMember) {
-        throw new Error(`Member already exists`);
-    }
+//     if (existingMember) {
+//         throw new Error(`Member already exists`);
+//     }
 
-    return prisma.organizationMember.create({
-        data: {
-            userId: user.id,
-            organizationId,
-            role,
-        },
-        include: {
-            user: {
-                select: {
-                    id: true,
-                    name: true,
-                    email: true,
-                    avatarUrl: true,
-                },
-            },
-        },
-    });
+//     return prisma.organizationMember.create({
+//         data: {
+//             userId: user.id,
+//             organizationId,
+//             role,
+//         },
+//         include: {
+//             user: {
+//                 select: {
+//                     id: true,
+//                     name: true,
+//                     email: true,
+//                     avatarUrl: true,
+//                 },
+//             },
+//         },
+//     });
 
-}
+// }
 
 
 
