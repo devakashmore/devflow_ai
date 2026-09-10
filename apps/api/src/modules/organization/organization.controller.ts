@@ -2,13 +2,81 @@ import { Response } from "express"
 import { AuthRequest } from "../../middleware/auth.middleware.js"
 import { createOrganizationSchema, addMemberSchema } from "./organization.validation.js"
 import {
-    createOrganization,
-    getOrganization,
-    getOrganizationMembers,
+    createOrganization, getOrganization, getOrganizationMembers,
     addOrganizationMember,
 } from "./organization.service.js"
 
+export async function getMembersController(
+    req: AuthRequest,
+    res: Response
+) {
+    try {
+        const members = await getOrganizationMembers(
+            String(req.params.organizationId)
+        );
 
+        return res.json({
+            success: true,
+            data: {
+                members,
+            },
+        });
+    } catch (error: any) {
+        console.error(error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to fetch members",
+        });
+    }
+}
+export async function addMemberController(
+    req: AuthRequest,
+    res: Response
+) {
+    try {
+        const data = addMemberSchema.parse(req.body);
+
+        const member = await addOrganizationMember(
+            String(req.params.organizationId),
+            data.email,
+            data.role
+        );
+
+        return res.status(201).json({
+            success: true,
+            message: "Member added successfully",
+            data: {
+                member,
+            },
+        });
+    } catch (error: any) {
+        if (
+            error instanceof Error &&
+            error.message === "USER_NOT_FOUND"
+        ) {
+            return res.status(404).json({
+                success: false,
+                message: "No user exists with this email",
+            });
+        }
+
+        if (
+            error instanceof Error &&
+            error.message === "MEMBER_ALREADY_EXISTS"
+        ) {
+            return res.status(409).json({
+                success: false,
+                message: "User is already a member",
+            });
+        }
+
+        return res.status(400).json({
+            success: false,
+            message: "Unable to add member",
+        });
+    }
+}
 export async function createOrganizationController(req: AuthRequest, res: Response) {
     try {
 
@@ -29,7 +97,7 @@ export async function createOrganizationController(req: AuthRequest, res: Respon
             },
         });
 
-    } catch (error) {
+    } catch (error: any) {
         // console.error(error);
 
         return res.status(400).json({
@@ -50,7 +118,7 @@ export async function getOrganizationController(req: AuthRequest, res: Response)
 
         const organization = await getOrganization(
             req.userId,
-            req.params.organizationId
+            String(req.params.organizationId)
         );
         if (!organization) {
             return res.status(404).json({
@@ -64,7 +132,7 @@ export async function getOrganizationController(req: AuthRequest, res: Response)
                 organization,
             },
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error(error);
 
         return res.status(500).json({
