@@ -21,7 +21,7 @@ export async function register(req: Request, res: Response) {
                     refreshToken
                 }
             });
-    } catch (error:any) {
+    } catch (error: any) {
 
         if (error instanceof Error && error.message === "User already exists") {
             res.status(409).json({
@@ -32,11 +32,12 @@ export async function register(req: Request, res: Response) {
             res.status(400).json({
                 success: false,
                 message: "invalid registration data",
-                error: error.message
+                error: error.message,
+                errors: error.issues,
 
             });
             console.log(error);
-            
+
         }
     }
 }
@@ -62,7 +63,7 @@ export async function login(req: Request, res: Response) {
                 refreshToken
             }
         })
-    } catch (error:any) {
+    } catch (error: any) {
         res.status(400).json({
             success: false,
             message: "invalid login data(email or password)",
