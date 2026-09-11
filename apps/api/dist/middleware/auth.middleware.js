@@ -8,7 +8,13 @@ export function authenticate(req, res, next) {
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
         return res.status(401).json({ message: "Authorization header missing" });
     }
-    const token = authHeader.split(" ")[1];
+    // const token = authHeader.split(" ")[1];
+    const token = authHeader.substring(7);
+    if (!token) {
+        return res.status(401).json({
+            message: "Token missing"
+        });
+    }
     try {
         const decoded = jwt.verify(token, accessSecret);
         req.userId = decoded.userId;
