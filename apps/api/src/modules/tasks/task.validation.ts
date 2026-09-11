@@ -1,3 +1,4 @@
+// import { title } from "node:process";
 import { z } from "zod";
 export const createTaskSchema = z.object({
     title: z.string()
@@ -37,3 +38,25 @@ export const updateTakStatusSchema = z.object({
 });
 
 
+export const updateTaskSchema = z.object({
+    title: z.string()
+        .min(2, "Task title must contain at least 2 characters")
+        .max(200),
+    description: z.string()
+        .max(2000)
+        .optional(),
+
+    priority: z.enum([
+        "LOW",
+        "MEDIUM",
+        "HIGH",
+        "URGENT",
+    ]),
+
+    status: z.enum([
+        "TODO",
+        "IN_PROGRESS",
+        "IN_REVIEW",
+        "DONE",
+    ]),
+});
