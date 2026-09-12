@@ -2,6 +2,7 @@
 import Image from "next/image";
 import { motion } from "motion/react";
 import LoginPage from "./login/page";
+import Link from "next/link";
 export default function Home() {
   return (
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
@@ -26,9 +27,17 @@ export default function Home() {
             </p>
           </motion.h1>
 
-         <div className="mt-10">
-           <LoginPage />
-         </div>
+          <div className="mt-10 flex gap-5">
+            {/* <LoginPage /> */}
+            <Link href="/login" className="bg-amber-500 text-white px-6 py-2 capitalize text-2xl border  border-amber-500 rounded-4xl hover:bg-black  hover:border-white">
+              login
+            </Link>
+
+            <Link href="/register" className="bg-black border-amber-50 text-white px-6 py-2 capitalize text-2xl border rounded-4xl hover:bg-amber-500 hover:border-amber-500 ">
+              Register
+            </Link>
+
+          </div>
 
         </div>
 
