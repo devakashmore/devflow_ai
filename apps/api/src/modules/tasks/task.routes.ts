@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authenticate } from "../../middleware/auth.middleware.js";
-import { createTaskController, getProjectTasksController, updateTaskController } from "./task.controller.js";
+import { createTaskController, getProjectTasksController, updateTaskController, updateTaskStatusController } from "./task.controller.js";
 
 
 const router = Router();
@@ -17,8 +17,10 @@ router.get("/projects/:projectId/tasks",
 
 router.patch("/projects/:projectId/tasks/:taskId/status",
     authenticate,
-    updateTaskController
+    updateTaskStatusController
 );
+
+router.patch("/projects/:projectId/tasks/:taskId", authenticate, updateTaskController)
 
 export default router;
 
