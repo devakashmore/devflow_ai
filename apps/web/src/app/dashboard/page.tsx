@@ -94,6 +94,8 @@ export default function DashboardPage() {
                 window.location.href = "/login";
                 return;
             }
+
+
             /*
             * Temporary:
             * Replace this with actual project ID.
@@ -104,6 +106,9 @@ export default function DashboardPage() {
                 setLoading(false);
                 return;
             }
+
+            console.log("PROJECT ID FROM LOCAL STORAGE:", id);
+            console.log("ACCESS TOKEN EXISTS:", !!token);
 
             setProjectId(id);
 
@@ -134,6 +139,8 @@ export default function DashboardPage() {
         if (!taskTitle.trim()) {
             return;
         }
+
+
         try {
             setCreatingTask(true);
             const token = localStorage.getItem("accessToken");
@@ -152,7 +159,8 @@ export default function DashboardPage() {
                     }),
                 }
             );
-
+            console.log("PROJECT ID:", projectId);
+            console.log("ACCESS TOKEN EXISTS:", !!token);
             // adding newly created task to Kanban
             setTasks((currentTasks) => [
                 response.data.task,
@@ -178,6 +186,49 @@ export default function DashboardPage() {
         }
 
 
+    }
+
+    async function handleUpdateTask() {
+        if (!selectedTask || !projectId) {
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem("accessToken");
+
+            const response = await apiRequest(
+                `/api/v1/projects/${projectId}/tasks/${selectedTask.id}`,
+                {
+                    method: "PATCH",
+
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        title: selectedTask.title,
+                        description: selectedTask.priority,
+                        status: selectedTask.status,
+                    }),
+                }
+            );
+            const updatedTask = response.data.task;
+
+            // update task in kanban
+            setTasks((currentTasks) => currentTasks
+                .map((task) =>
+                    task.id === updatedTask.id ? updatedTask : task
+                )
+            );
+
+            // update selected task
+            setSelectedTask(updatedTask);
+            alert("Task updated successfully!");
+        } catch (error) {
+            console.error("Failed to update task :",
+                error
+            );
+            alert("Failed to update task");
+        }
     }
 
     async function handleDragEnd(result: any) {
@@ -226,17 +277,10 @@ export default function DashboardPage() {
         }
     }
 
-
-
-
     function logout() {
         localStorage.removeItem("accessToken");
         router.push("/login");
     }
-
-
-
-
 
     if (loading) {
         return <main className="flex min-h-screen items-center justify-center bg-slate-950 text-white">
@@ -294,10 +338,6 @@ export default function DashboardPage() {
                                 </p>
                             </div>
                         </div>
-
-
-
-
                     </div>
                     {/* KANBAN */}
                     <div className="mt-10">
@@ -489,15 +529,14 @@ export default function DashboardPage() {
                             onClick={(e) => e.stopPropagation()}
                         >
                             {/* Header */}
-
                             <div className="flex items-start justify-between">
                                 <div>
-                                    <p className="text-sm text-blue-400">
+                                    <p className="text-sm font-medium text-blue-400">
                                         Task Details
                                     </p>
 
-                                    <h2 className="mt-2 text-2xl font-bold">
-                                        {selectedTask.title}
+                                    <h2 className="mt-1 text-xl font-bold text-white">
+                                        Edit Task
                                     </h2>
                                 </div>
 
@@ -509,51 +548,108 @@ export default function DashboardPage() {
                                 </button>
                             </div>
 
-                            {/* Description */}
-
+                            {/* Title */}
                             <div className="mt-6">
-                                <p className="text-sm font-medium text-slate-400">
-                                    Description
-                                </p>
+                                <label className="mb-2 block text-sm font-medium text-slate-300">
+                                    Title
+                                </label>
 
-                                <p className="mt-2 text-slate-200">
-                                    {selectedTask.description ||
-                                        "No description provided."}
-                                </p>
+                                <input
+                                    type="text"
+                                    value={selectedTask.title}
+                                    onChange={(e) =>
+                                        setSelectedTask({
+                                            ...selectedTask,
+                                            title: e.target.value,
+                                        })
+                                    }
+                                    className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none focus:border-blue-500"
+                                />
+                            </div>
+
+                            {/* Description */}
+                            <div className="mt-5">
+                                <label className="mb-2 block text-sm font-medium text-slate-300">
+                                    Description
+                                </label>
+
+                                <textarea
+                                    rows={4}
+                                    value={selectedTask.description || ""}
+                                    onChange={(e) =>
+                                        setSelectedTask({
+                                            ...selectedTask,
+                                            description: e.target.value,
+                                        })
+                                    }
+                                    className="w-full resize-none rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none focus:border-blue-500"
+                                />
                             </div>
 
                             {/* Status */}
-
-                            <div className="mt-6">
-                                <p className="text-sm font-medium text-slate-400">
+                            <div className="mt-5">
+                                <label className="mb-2 block text-sm font-medium text-slate-300">
                                     Status
-                                </p>
+                                </label>
 
-                                <div className="mt-2 rounded-lg border border-slate-700 bg-slate-800 px-4 py-3">
-                                    {selectedTask.status.replace("_", " ")}
-                                </div>
+                                <select
+                                    value={selectedTask.status}
+                                    onChange={(e) =>
+                                        setSelectedTask({
+                                            ...selectedTask,
+                                            status: e.target.value as TaskStatus,
+                                        })
+                                    }
+                                    className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none focus:border-blue-500"
+                                >
+                                    <option value="TODO">To Do</option>
+                                    <option value="IN_PROGRESS">
+                                        In Progress
+                                    </option>
+                                    <option value="IN_REVIEW">
+                                        In Review
+                                    </option>
+                                    <option value="DONE">Done</option>
+                                </select>
                             </div>
 
                             {/* Priority */}
-
                             <div className="mt-5">
-                                <p className="text-sm font-medium text-slate-400">
+                                <label className="mb-2 block text-sm font-medium text-slate-300">
                                     Priority
-                                </p>
+                                </label>
 
-                                <div className="mt-2 rounded-lg border border-slate-700 bg-slate-800 px-4 py-3">
-                                    {selectedTask.priority}
-                                </div>
+                                <select
+                                    value={selectedTask.priority}
+                                    onChange={(e) =>
+                                        setSelectedTask({
+                                            ...selectedTask,
+                                            priority: e.target.value as Task["priority"],
+                                        })
+                                    }
+                                    className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none focus:border-blue-500"
+                                >
+                                    <option value="LOW">Low</option>
+                                    <option value="MEDIUM">Medium</option>
+                                    <option value="HIGH">High</option>
+                                    <option value="URGENT">Urgent</option>
+                                </select>
                             </div>
 
-                            {/* Close */}
-
-                            <div className="mt-8 flex justify-end">
+                            {/* Buttons */}
+                            <div className="mt-8 flex justify-end gap-3">
                                 <button
                                     onClick={() => setSelectedTask(null)}
-                                    className="rounded-lg border border-slate-700 px-5 py-2.5 text-sm font-medium hover:bg-slate-800 cursor-pointer"
+                                    className="rounded-lg border border-slate-700 px-5 py-2.5 text-sm font-medium text-slate-300 hover:bg-slate-800"
                                 >
-                                    Close
+                                    Cancel
+                                </button>
+
+                                <button
+                                    onClick={handleUpdateTask}
+                                    className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500"
+                                >
+                                    Save Changes
                                 </button>
                             </div>
                         </div>
