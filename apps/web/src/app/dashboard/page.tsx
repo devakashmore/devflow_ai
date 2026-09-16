@@ -3,7 +3,7 @@ import { apiRequest } from "@/lib/api";
 import { useRouter } from "next/navigation"
 import React, { useEffect, useState } from "react";
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
-import { title } from "process";
+
 
 
 type TaskStatus = "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "DONE";
@@ -38,6 +38,14 @@ export default function DashboardPage() {
     const [loading, setLoading] = useState(true);
     const [task, setTasks] = useState<Task[]>([]);
     const [projectId, setProjectId] = useState("");
+
+    type Project = {
+        id: string;
+        name: string;
+        description?: string;
+    }
+
+    const [projects, setProjects] = useState<Project[]>([]);
 
 
     const [showCreateTask, setShowCreateTask] = useState(false);
@@ -83,11 +91,77 @@ export default function DashboardPage() {
     }, [router])
 
 
+
     useEffect(() => {
-        loadTasks();
+        async function initializeDashboard() {
+            await loadProjects();
+        }
+
+        initializeDashboard();
     }, []);
 
-    async function loadTasks() {
+
+
+    async function loadProjects() {
+        try {
+            const token = localStorage.getItem("accessToken");
+            if (!token) {
+                window.location.href = "/login";
+                return;
+            }
+
+            const response = await apiRequest("/api/v1/projects", {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            const projectList = response.data.projects;
+            setProjects(projectList);
+            // Automatically select the first project
+            if (projectList.length > 0) {
+                const savedProjectId = localStorage.getItem("projectId");
+                const projectExists = projectList.some(
+                    (project: Project) => project.id === savedProjectId
+                );
+                const selectedProjectId = projectExists
+                    ? savedProjectId!
+                    : projectList[0].id;
+
+                // localStorage.setItem("projectId", selectedProjectId);
+
+                // setProjectId(selectedProjectId);
+
+                localStorage.setItem("projectId", selectedProjectId);
+
+                setProjectId(selectedProjectId);
+
+                // Load tasks for the selected project
+                await loadTasks(selectedProjectId);
+
+            } else {
+                localStorage.removeItem("projectId");
+                setProjectId("");
+            }
+        } catch (error) {
+            console.error(
+                "Failed to load projects:",
+                error
+            );
+        }
+    }
+
+
+    // useEffect(() => {
+    //     loadTasks();
+    // }, []);
+    //  useEffect(() => {
+    //     if (projectId) {
+    //         loadTasks(projectId);
+    //     }
+    // }, [projectId]);
+
+
+    async function loadTasks(selectedProjectId?: string) {
         try {
             const token = localStorage.getItem("accessToken");
             if (!token) {
@@ -98,17 +172,22 @@ export default function DashboardPage() {
 
             /*
             * Temporary:
-            * Replace this with actual project ID.
+            * Replace this with actual project ID.(note :replaced 16-09-2026)
             */
-            const id = localStorage.getItem("projectId");
+            const id =
+                selectedProjectId ||
+                localStorage.getItem("projectId");
+
             if (!id) {
-                console.log("No projectId found in localStorage");
+                console.log("No projectId found");
                 setLoading(false);
                 return;
             }
 
-            console.log("PROJECT ID FROM LOCAL STORAGE:", id);
-            console.log("ACCESS TOKEN EXISTS:", !!token);
+            console.log(
+                "PROJECT ID:",
+                id
+            );
 
             setProjectId(id);
 
@@ -120,6 +199,7 @@ export default function DashboardPage() {
                 }
             );
 
+            // setTasks(response.data.task);
             setTasks(response.data.task);
 
         } catch (error) {
@@ -128,6 +208,7 @@ export default function DashboardPage() {
             setLoading(false);
         }
     }
+
 
     async function handleCreateTask(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -801,4 +882,5 @@ export default function DashboardPage() {
         </>
     )
 }
+
 
