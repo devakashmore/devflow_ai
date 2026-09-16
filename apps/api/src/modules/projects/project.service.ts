@@ -1,5 +1,7 @@
+import { tr } from "zod/locales";
 import { prisma } from "../../config/database.js";
 import { createProjectSlug } from "./project.utils.js";
+
 export async function createProject(
     userId: string,
     organizationId: string,
@@ -36,7 +38,7 @@ export async function createProject(
             },
         },
     });
-    
+
     if (existingProject) {
         slug = `${slug}-${Date.now()}`;
     }
@@ -69,4 +71,42 @@ export async function createProject(
             },
         },
     });
+}
+
+export async function getProjects(userId: string) {
+
+    const projects = await prisma.project.findMany({
+        where: {
+            members: {
+                some: {
+                    userId,
+                },
+            },
+        },
+        include: {
+            organization: {
+                select: {
+                    id: true,
+                    name: true,
+                },
+            },
+
+            members: {
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true,
+                        },
+                    },
+                },
+            },
+        },
+        orderBy: {
+            createdAt: "desc",
+        },
+    });
+
+    return projects;
 }

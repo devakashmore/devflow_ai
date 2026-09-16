@@ -2,8 +2,9 @@ import { Response } from "express";
 import { AuthRequest } from "../../middleware/auth.middleware.js";
 import { createProjectSchema } from "./project.validation.js"
 import {
-    createProject
+    createProject, getProjects
 } from "./project.service.js";
+import { success } from "zod";
 
 
 export async function createProjectController(req: AuthRequest, res: Response) {
@@ -62,6 +63,35 @@ export async function createProjectController(req: AuthRequest, res: Response) {
         return res.status(400).json({
             success: false,
             message: "Unable to create project",
+        });
+
+    }
+}
+
+export async function getProjectController(req: AuthRequest, res: Response) {
+    try {
+        if (!req.userId) {
+            return res.status(401).json({
+                success: false,
+                message: "Authentication required",
+            });
+        }
+
+        const projects = await getProjects(req.userId);
+        return res.status(200).json({
+            success: true,
+            message: "Projects fetched successfully",
+            data: {
+                projects,
+            },
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch projects",
         });
 
     }
