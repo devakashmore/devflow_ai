@@ -284,10 +284,17 @@ export default function DashboardPage() {
 
                     headers: {
                         Authorization: `Bearer ${token}`,
+                            "Content-Type": "application/json",
                     },
+                    // body: JSON.stringify({
+                    //     title: selectedTask.title,
+                    //     description: selectedTask.priority,
+                    //     status: selectedTask.status,
+                    // }),
                     body: JSON.stringify({
                         title: selectedTask.title,
-                        description: selectedTask.priority,
+                        description: selectedTask.description || "",
+                        priority: selectedTask.priority,
                         status: selectedTask.status,
                     }),
                 }
