@@ -209,6 +209,18 @@ export default function DashboardPage() {
         }
     }
 
+    async function handleProjectChange(e: React.ChangeEvent<HTMLSelectElement>) {
+        const selectedId = e.target.value;
+
+        if (!selectedId) return;
+
+        localStorage.setItem("projectId", selectedId);
+
+        setProjectId(selectedId);
+        setSelectedTask(null);
+
+        await loadTasks(selectedId);
+    }
 
     async function handleCreateTask(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -284,7 +296,7 @@ export default function DashboardPage() {
 
                     headers: {
                         Authorization: `Bearer ${token}`,
-                            "Content-Type": "application/json",
+                        "Content-Type": "application/json",
                     },
                     // body: JSON.stringify({
                     //     title: selectedTask.title,
@@ -379,28 +391,32 @@ export default function DashboardPage() {
     return (
         <>
             <main className="min-h-screen bg-slate-950 p-8 text-white">
+
                 <div className="mx-auto mx-w-6xl">
                     <div className="flex  items-center justify-between">
                         {/* Header */}
                         <div className="">
-                            <p className="text-sm text-slate-400">
+                            <p className="text-md text-slate-400">
                                 DevFlow AI
                             </p>
                             <h1 className="mt-2 text-3xl font-bold">
-                                Wlecome, {user?.name}
+                                Wlecome, <span className="capitalize">{user?.name}</span>
                             </h1>
                             <p className="mt-2 text-slate-400">
                                 {user?.email}
                             </p>
                             <button
                                 onClick={logout}
-                                className="rounded-lg border border-slate-700 px-4 py-2 text-sm hover:bg-slate-800">
+                                className="rounded-lg border mt-5 cursor-pointer text-md border-slate-700 px-6 py-2 hover:bg-slate-800">
                                 logout
                             </button>
                         </div>
 
+
                         {/* Stats */}
+
                         <div className="mt-10 grid gap-6 md:grid-cols-3  ">
+
                             <div className="rounded-xl border border-slate-800 bg-slate-900 p-6">
                                 <p className="text-slate-400">
                                     Projects
@@ -427,6 +443,30 @@ export default function DashboardPage() {
                             </div>
                         </div>
                     </div>
+
+                    <hr className="mt-5" />
+                    {/* projects LIST */}
+                    <div className="flex items-center mt-5 gap-3 ">
+                        <label
+                            htmlFor="project-select"
+                            className=" text-white uppercase">
+                            Projects
+                        </label>
+
+                        <select
+                            id="project-select"
+                            value={projectId}
+                            onChange={handleProjectChange}
+                            className="rounded-lg border border-slate-700 bg-slate-900 px-6 py-2 text-sm text-white outline-none focus:border-blue-500"
+                        >
+                            {projects.map((project) => (
+                                <option key={project.id} value={project.id}>
+                                    {project.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <hr className="mt-5" />
                     {/* KANBAN */}
                     <div className="mt-10">
                         <div className="mb-5">
@@ -452,18 +492,18 @@ export default function DashboardPage() {
                         </div>
                         {!projectId ? (
                             <div className="rounded-xl border border-yellow-800 bg-yellow-950/30 p-6">
-                                <p className="text-yellow-400">
+                                {/* <p className="text-yellow-400">
                                     No project selected.
-                                </p>
-                                <p className="mt-2 text-sm text-slate-400">
+                                </p> */}
+                                {/* <p className="mt-2 text-sm text-slate-400">
                                     Add your project ID to localStorage:
-                                </p>
-                                <code className="mt-3 rounded-lg block bg-slate-900 p-3 text-sm text-blue-400">
+                                </p> */}
+                                {/* <code className="mt-3 rounded-lg block bg-slate-900 p-3 text-sm text-blue-400">
                                     localStorage.setItem(
                                     &quot;projectId&quot;,
                                     &quot;YOUR_PROJECT_ID&quot;
                                     )
-                                </code>
+                                </code> */}
                             </div>
                         ) : (
                             <DragDropContext
@@ -607,6 +647,7 @@ export default function DashboardPage() {
                         )}
                     </div>
                 </div>
+
                 {selectedTask && (
                     <div
                         className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
@@ -614,8 +655,7 @@ export default function DashboardPage() {
                     >
                         <div
                             className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl"
-                            onClick={(e) => e.stopPropagation()}
-                        >
+                            onClick={(e) => e.stopPropagation()}>
                             {/* Header */}
                             <div className="flex items-start justify-between">
                                 <div>
