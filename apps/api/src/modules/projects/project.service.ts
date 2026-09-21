@@ -1,4 +1,4 @@
-import { tr } from "zod/locales";
+
 import { prisma } from "../../config/database.js";
 import { createProjectSlug } from "./project.utils.js";
 
@@ -110,3 +110,50 @@ export async function getProjects(userId: string) {
 
     return projects;
 }
+
+export async function getProjectMembers(userId: string, projectId: string) {
+
+    const project = await prisma.project.findUnique({
+        where: {
+            id: projectId,
+        },
+    });
+
+    if (!project) {
+        throw new Error("PROJECT_NOT_FOUND");
+    }
+
+    // making sure the request user belongs to that organization
+    const organizationMember = await prisma.organizationMember.findUnique({
+        where: {
+            userId_organizationId: {
+                userId,
+                organizationId: project.organizationId,
+            },
+        },
+    });
+
+    if (!organizationMember) {
+        throw new Error("NOT_ORGANIZATION_MEMBER");
+    }
+
+    return prisma.projectMember.findMany({
+        where: {
+            projectId,
+        },
+        include: {
+            user: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    avatarUrl: true
+                },
+            },
+        },
+        orderBy: {
+            createdAt: "asc",
+        },
+    });
+}
+
