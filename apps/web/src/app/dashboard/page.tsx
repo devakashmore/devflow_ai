@@ -15,6 +15,17 @@ type Task = {
     status: TaskStatus;
     priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
 }
+
+type ProjectMember = {
+    id: string;
+    role: "MANAGER" | "DEVELOPER" | "VIEWER";
+    user: {
+        id: string;
+        name: string;
+        email: string;
+        avatarUrl?: string | null;
+    };
+};
 interface User {
     id: string;
     name: string;
@@ -31,6 +42,8 @@ const columns: {
         { id: "DONE", title: "Done" },
     ];
 
+
+
 export default function DashboardPage() {
     const router = useRouter();
 
@@ -46,12 +59,14 @@ export default function DashboardPage() {
     }
 
     const [projects, setProjects] = useState<Project[]>([]);
+    const [projectMembers, setProjectMembers] = useState<ProjectMember[]>([]);
 
 
     const [showCreateTask, setShowCreateTask] = useState(false);
     const [taskTitle, setTaskTitle] = useState("");
     const [taskDescription, setTaskDescription] = useState("");
     const [taskPriority, setTaskPriority] = useState<"LOW" | "MEDIUM" | "HIGH" | "URGENT">("MEDIUM");
+    const [taskAssigneeId, setTaskAssigneeId] = useState("");
     const [creatingTask, setCreatingTask] = useState(false);
 
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -137,6 +152,7 @@ export default function DashboardPage() {
 
                 // Load tasks for the selected project
                 await loadTasks(selectedProjectId);
+                await loadProjectMembers(selectedProjectId);
 
             } else {
                 localStorage.removeItem("projectId");
@@ -209,6 +225,44 @@ export default function DashboardPage() {
         }
     }
 
+    async function loadProjectMembers(selectedProjectId?: string) {
+        try {
+            const token = localStorage.getItem("accessToken");
+            if (!token) {
+                window.location.href = "/login";
+                return;
+            }
+
+            const id = selectedProjectId || projectId || localStorage.getItem("projectId");
+
+            if (!id) {
+                setProjectMembers([]);
+                return;
+            }
+
+            const response = await apiRequest(`/api/v1/projects/${id}/members`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            setProjectMembers(response.data.members ?? []);
+            console.log("PROJECT MEMBERS:", response.data.members);
+
+
+        } catch (error) {
+            console.error(
+                "Failed to load project members:",
+                error
+            );
+
+            setProjectMembers([]);
+        }
+    }
+
+
     async function handleProjectChange(e: React.ChangeEvent<HTMLSelectElement>) {
         const selectedId = e.target.value;
 
@@ -220,6 +274,7 @@ export default function DashboardPage() {
         setSelectedTask(null);
 
         await loadTasks(selectedId);
+        await loadProjectMembers(selectedId);
     }
 
     async function handleCreateTask(e: React.FormEvent<HTMLFormElement>) {
@@ -245,10 +300,18 @@ export default function DashboardPage() {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${token}`,
                     },
+                    // body: JSON.stringify({
+                    //     title: taskTitle,
+                    //     description: taskDescription,
+                    //     priority: taskPriority,
+                    // }),
                     body: JSON.stringify({
                         title: taskTitle,
                         description: taskDescription,
                         priority: taskPriority,
+                        ...(taskAssigneeId && {
+                            assigneeId: taskAssigneeId,
+                        }),
                     }),
                 }
             );
@@ -264,6 +327,7 @@ export default function DashboardPage() {
             setTaskTitle("");
             setTaskDescription("");
             setTaskPriority("MEDIUM");
+            setTaskAssigneeId("");
 
             //close modal
             setShowCreateTask(false);
@@ -446,25 +510,28 @@ export default function DashboardPage() {
 
                     <hr className="mt-5" />
                     {/* projects LIST */}
-                    <div className="flex items-center mt-5 gap-3 ">
-                        <label
-                            htmlFor="project-select"
-                            className=" text-white uppercase">
-                            Projects
-                        </label>
+                    <div className="flex gap-5">
+                        <div className="flex items-center mt-5 gap-3 ">
+                            <label
+                                htmlFor="project-select"
+                                className=" text-white uppercase">
+                                Projects
+                            </label>
 
-                        <select
-                            id="project-select"
-                            value={projectId}
-                            onChange={handleProjectChange}
-                            className="rounded-lg border border-slate-700 bg-slate-900 px-6 py-2 text-sm text-white outline-none focus:border-blue-500"
-                        >
-                            {projects.map((project) => (
-                                <option key={project.id} value={project.id}>
-                                    {project.name}
-                                </option>
-                            ))}
-                        </select>
+                            <select
+                                id="project-select"
+                                value={projectId}
+                                onChange={handleProjectChange}
+                                className="rounded-lg border border-slate-700 bg-slate-900 px-6 py-2 text-sm text-white outline-none focus:border-blue-500 cursor-pointer"
+                            >
+                                {projects.map((project) => (
+                                    <option key={project.id} value={project.id}>
+                                        {project.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
                     </div>
                     <hr className="mt-5" />
                     {/* KANBAN */}
@@ -764,6 +831,36 @@ export default function DashboardPage() {
                                 </select>
                             </div>
 
+                            <div className="mt-5" >
+                                <label
+                                    htmlFor="task-assignee"
+                                    className="mb-2 block text-sm font-medium text-slate-300"
+                                >
+                                    Assignee
+                                </label>
+
+                                <select
+                                    id="task-assignee"
+                                    value={taskAssigneeId}
+                                    onChange={(e) =>
+                                        setTaskAssigneeId(e.target.value)
+                                    }
+                                    className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none focus:border-blue-500"
+                                >
+                                    <option value="">
+                                        Unassigned
+                                    </option>
+
+                                    {projectMembers.map((member) => (
+                                        <option
+                                            key={member.user.id}
+                                            value={member.user.id}
+                                        >
+                                            {member.user.name} ({member.role})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
                             {/* Buttons */}
                             <div className="mt-8 flex justify-end gap-3">
                                 <button
