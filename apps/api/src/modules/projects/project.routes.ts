@@ -2,7 +2,8 @@ import { Router } from "express";
 import { authenticate } from "../../middleware/auth.middleware.js";
 
 import {
-    createProjectController, getProjectController
+    createProjectController, getProjectController,
+    getProjectMembersController
 } from "./project.controller.js";
 
 
@@ -18,5 +19,6 @@ router.post("/organizations/:organizationId/projects",
     createProjectController
 );
 
+router.get("/projects/:projectId/members", authenticate, getProjectMembersController);
 
 export default router;
