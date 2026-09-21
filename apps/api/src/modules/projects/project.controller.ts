@@ -2,7 +2,7 @@ import { Response } from "express";
 import { AuthRequest } from "../../middleware/auth.middleware.js";
 import { createProjectSchema } from "./project.validation.js"
 import {
-    createProject, getProjects
+    createProject, getProjects, getProjectMembers
 } from "./project.service.js";
 import { success } from "zod";
 
@@ -94,5 +94,64 @@ export async function getProjectController(req: AuthRequest, res: Response) {
             message: "Failed to fetch projects",
         });
 
+    }
+}
+
+export async function getProjectMembersController(
+    req: AuthRequest,
+    res: Response
+) {
+    try {
+        if (!req.userId) {
+            return res.status(401).json({
+                success: false,
+                message: "Authentication required",
+            });
+        }
+
+        const { projectId } = req.params;
+
+        if (!projectId) {
+            return res.status(400).json({
+                success: false,
+                message: "Project ID is required",
+            });
+        }
+
+        const members = await getProjectMembers(
+            req.userId,
+            projectId
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: "Project members fetched successfully",
+            data: {
+                members,
+            },
+        });
+    } catch (error) {
+        console.error(error);
+
+        if (error instanceof Error) {
+            if (error.message === "PROJECT_NOT_FOUND") {
+                return res.status(404).json({
+                    success: false,
+                    message: "Project not found",
+                });
+            }
+
+            if (error.message === "NOT_ORGANIZATION_MEMBER") {
+                return res.status(403).json({
+                    success: false,
+                    message: "You are not a member of this organization",
+                });
+            }
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch project members",
+        });
     }
 }
