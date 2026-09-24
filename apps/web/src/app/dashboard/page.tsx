@@ -14,6 +14,12 @@ type Task = {
     description?: string;
     status: TaskStatus;
     priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+    assignee?: {
+        id: string;
+        name: string;
+        email: string;
+        avatarUrl?: string | null;
+    } | null;
 }
 
 type ProjectMember = {
@@ -658,6 +664,29 @@ export default function DashboardPage() {
                                                                                     <p className="mt-2 line-clamp-3 text-sm text-slate-400">
                                                                                         {task.description}
                                                                                     </p>
+                                                                                )}
+
+                                                                                {/* ASSIGNEE */}
+                                                                                {task.assignee && (
+                                                                                    <div className="mt-3 flex items-center gap-2">
+                                                                                        {/* Avatar */}
+                                                                                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-semibold text-white">
+                                                                                            {task.assignee.name
+                                                                                                .charAt(0)
+                                                                                                .toUpperCase()}
+                                                                                        </div>
+
+                                                                                        {/* Name */}
+                                                                                        <div className="min-w-0">
+                                                                                            <p className="truncate text-xs font-medium text-slate-300">
+                                                                                                {task.assignee.name}
+                                                                                            </p>
+
+                                                                                            <p className="text-[11px] text-slate-500">
+                                                                                                Assignee
+                                                                                            </p>
+                                                                                        </div>
+                                                                                    </div>
                                                                                 )}
 
                                                                                 {/* PRIORITY */}
