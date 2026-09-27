@@ -216,7 +216,82 @@ export async function updateTaskStatus(
 }
 
 
-export async function updateTask(userId: string,
+// export async function updateTask(userId: string,
+//     projectId: string,
+//     taskId: string,
+//     data: {
+//         title: string;
+//         description?: string;
+//         priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+//         status: "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "DONE";
+//     }
+// ) {
+
+//     const project = await prisma.project.findUnique({
+//         where: {
+//             id: projectId,
+//         },
+//     });
+
+//     if (!project) {
+//         throw new Error("PROJECT_NOT_FOUND");
+//     }
+
+//     const member = await prisma.organizationMember.findUnique({
+//         where: {
+//             userId_organizationId: {
+//                 userId,
+//                 organizationId: project.organizationId,
+//             },
+//         },
+//     });
+
+//     if (!member) {
+//         throw new Error("NOT_ORGANIZATION_MEMBER");
+//     }
+
+//     const task = await prisma.task.findFirst({
+//         where: {
+//             id: taskId,
+//             projectId,
+//         },
+//     });
+
+//     if (!task) {
+//         throw new Error("TASK_NOT_FOUND");
+//     }
+
+//     const allowedRole = [
+//         "OWNER",
+//         "ADMIN",
+//         "MANAGER",
+//         "DEVELOPER",
+//     ];
+
+//     if (!allowedRole.includes(member.role)) {
+//         throw new Error("INSUFFICIENT_PERMISSION");
+//     }
+
+//     return prisma.task.update({
+//         where: {
+//             id: taskId,
+//         },
+
+//         data: {
+//             title: data.title,
+//             description: data.description,
+//             priority: data.priority,
+//             status: data.status,
+//         },
+//     });
+
+// }
+
+
+
+
+export async function updateTask(
+    userId: string,
     projectId: string,
     taskId: string,
     data: {
@@ -224,9 +299,9 @@ export async function updateTask(userId: string,
         description?: string;
         priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
         status: "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "DONE";
+        assigneeId?: string;
     }
 ) {
-
     const project = await prisma.project.findUnique({
         where: {
             id: projectId,
@@ -237,17 +312,29 @@ export async function updateTask(userId: string,
         throw new Error("PROJECT_NOT_FOUND");
     }
 
-    const member = await prisma.organizationMember.findUnique({
-        where: {
-            userId_organizationId: {
-                userId,
-                organizationId: project.organizationId,
+    const member =
+        await prisma.organizationMember.findUnique({
+            where: {
+                userId_organizationId: {
+                    userId,
+                    organizationId: project.organizationId,
+                },
             },
-        },
-    });
+        });
 
     if (!member) {
         throw new Error("NOT_ORGANIZATION_MEMBER");
+    }
+
+    const allowedRoles = [
+        "OWNER",
+        "ADMIN",
+        "MANAGER",
+        "DEVELOPER",
+    ];
+
+    if (!allowedRoles.includes(member.role)) {
+        throw new Error("INSUFFICIENT_PERMISSION");
     }
 
     const task = await prisma.task.findFirst({
@@ -261,32 +348,50 @@ export async function updateTask(userId: string,
         throw new Error("TASK_NOT_FOUND");
     }
 
-    const allowedRole = [
-        "OWNER",
-        "ADMIN",
-        "MANAGER",
-        "DEVELOPER",
-    ];
+    if (data.assigneeId) {
+        const projectMember =
+            await prisma.projectMember.findUnique({
+                where: {
+                    projectId_userId: {
+                        projectId,
+                        userId: data.assigneeId,
+                    },
+                },
+            });
 
-    if (!allowedRole.includes(member.role)) {
-        throw new Error("INSUFFICIENT_PERMISSION");
+        if (!projectMember) {
+            throw new Error(
+                "ASSIGNEE_NOT_PROJECT_MEMBER"
+            );
+        }
     }
 
     return prisma.task.update({
         where: {
             id: taskId,
         },
-
         data: {
             title: data.title,
             description: data.description,
             priority: data.priority,
             status: data.status,
+            assigneeId: data.assigneeId || null,
+        },
+        include: {
+            assignee: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    avatarUrl: true,
+                },
+            },
+            creator: {
+                select: {
+                    id: true,
+                    name: true,
+                },
+            },
         },
     });
-
 }
-
-
-
-

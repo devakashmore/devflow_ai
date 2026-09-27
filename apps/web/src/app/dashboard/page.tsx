@@ -378,6 +378,7 @@ export default function DashboardPage() {
                         description: selectedTask.description || "",
                         priority: selectedTask.priority,
                         status: selectedTask.status,
+                        assigneeId: selectedTask.assignee?.id || undefined,
                     }),
                 }
             );
@@ -860,7 +861,8 @@ export default function DashboardPage() {
                                 </select>
                             </div>
 
-                            <div className="mt-5" >
+                            {/*   Assignee */}
+                            {/* <div className="mt-5" >
                                 <label
                                     htmlFor="task-assignee"
                                     className="mb-2 block text-sm font-medium text-slate-300"
@@ -875,6 +877,45 @@ export default function DashboardPage() {
                                         setTaskAssigneeId(e.target.value)
                                     }
                                     className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none focus:border-blue-500"
+                                >
+                                    <option value="">
+                                        Unassigned
+                                    </option>
+
+                                    {projectMembers.map((member) => (
+                                        <option
+                                            key={member.user.id}
+                                            value={member.user.id}
+                                        >
+                                            {member.user.name} ({member.role})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div> */}
+                            <div>
+                                <label
+                                    htmlFor="edit-task-assignee"
+                                    className="mb-2 block text-sm font-medium text-slate-300"
+                                >
+                                    Assignee
+                                </label>
+
+                                <select
+                                    id="edit-task-assignee"
+                                    value={selectedTask?.assignee?.id ?? ""}
+                                    onChange={(e) => {
+                                        if (!selectedTask) return;
+
+                                        setSelectedTask({
+                                            ...selectedTask,
+                                            assignee:
+                                                projectMembers.find(
+                                                    (member) =>
+                                                        member.user.id === e.target.value
+                                                )?.user ?? null,
+                                        });
+                                    }}
+                                    className="w-full rounded-lg border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500"
                                 >
                                     <option value="">
                                         Unassigned
