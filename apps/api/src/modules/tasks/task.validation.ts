@@ -59,4 +59,7 @@ export const updateTaskSchema = z.object({
         "IN_REVIEW",
         "DONE",
     ]),
+    assigneeId: z
+        .string()
+        .optional(),
 });
